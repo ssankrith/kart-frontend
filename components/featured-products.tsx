@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchProducts } from "@/lib/api/client";
 import type { Product } from "@/lib/types";
 import { Card } from "@/components/ui/card";
+import { ResponsiveProductImage } from "@/components/responsive-product-image";
 
 export function FeaturedProducts() {
   const [products, setProducts] = useState<Product[] | null>(null);
@@ -38,18 +38,15 @@ export function FeaturedProducts() {
       </p>
       <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((p) => {
-          const img = p.image?.thumbnail ?? p.image?.mobile;
           return (
             <li key={p.id}>
               <Card className="overflow-hidden p-0">
                 <Link href={`/menu/${p.id}`} className="block">
-                  {img ? (
+                  {p.image ? (
                     <div className="relative aspect-[4/3] w-full bg-surface-muted">
-                      <Image
-                        src={img}
+                      <ResponsiveProductImage
+                        image={p.image}
                         alt={p.name}
-                        fill
-                        className="object-cover"
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     </div>
