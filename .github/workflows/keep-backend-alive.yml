@@ -1,0 +1,32 @@
+# Hits GET /api/cron/keep-alive on the deployed frontend every 10 minutes so the Next route
+# can ping kart-backend GET /product (Render free tier spin-down mitigation).
+# Repo secrets: FRONTEND_BASE_URL (e.g. https://your-app.vercel.app), optional CRON_SECRET
+# (must match the Vercel env CRON_SECRET if set).
+
+name: Keep backend alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping catalog (via frontend cron route)
+        env:
+          FRONTEND_BASE_URL: ${{ secrets.FRONTEND_BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FRONTEND_BASE_URL:-}" ]; then
+            echo "Set repository secret FRONTEND_BASE_URL to your deployed frontend origin (no trailing slash)."
+            exit 1
+          fi
+          URL="${FRONTEND_BASE_URL%/}/api/cron/keep-alive"
+          if [ -n "${CRON_SECRET:-}" ]; then
+            curl -fsS -H "Authorization: Bearer ${CRON_SECRET}" "$URL"
+          else
+            curl -fsS "$URL"
+          fi
